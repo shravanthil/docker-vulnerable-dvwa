@@ -1,0 +1,35 @@
+name: Docker Image scan via cli
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+jobs:
+  build:
+    name: Docker Image scan
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      
+      - name: Build an image from Dockerfile
+        run: |
+          docker build -t docker.io/sdevsecops221/docker-vulnerable-dvwa:${{ github.sha }} .
+      
+      - name: Run Trivy image scan
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.24.1
+          trivy --version         
+          trivy image --format sarif --output trivy-results.sarif --exit-code 0  docker.io/sdevsecops221/docker-vulnerable-dvwa:${{ github.sha }}
+          
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v1
+        if: always() 
+        with:
+          sarif_file: 'trivy-results.sarif'
+          
+      - name: Archive Scan results
+        uses: actions/upload-artifact@v2
+        with:
+          name: scan-report
+          path: trivy-results.sarif    
