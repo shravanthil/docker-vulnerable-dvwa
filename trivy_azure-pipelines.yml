@@ -16,7 +16,7 @@ steps:
    trivy --version         
    trivy image --format sarif --output trivy-results.sarif --exit-code 0  docker.io/sdevsecops221/docker-vulnerable-dvwa:$(Build.BuildNumber)
   displayName: 'Run image scan using Trivy'
-
+  continueOnError: true
 
 - task: PublishPipelineArtifact@1
   inputs:
