@@ -11,11 +11,14 @@ Trivy_container_scanning:
     - apk add --no-cache curl docker-cli
     - docker build -t docker.io/sdevsecops221/docker-vulnerable-dvwa:$CI_COMMIT_SHA .
     - curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.24.1
+    - curl -sSL -o /tmp/trivy-gitlab.tpl https://github.com/aquasecurity/trivy/raw/v0.24.1/contrib/html.tpl 
 
   script:  
-    - trivy image --format sarif --output trivy-results.sarif --exit-code 0   docker.io/sdevsecops221/docker-vulnerable-dvwa:$CI_COMMIT_SHA
+    - pwd
+    - ls -al
+    - trivy image  --format  template --template "@/tmp/trivy-gitlab.tpl"  -o trivy-results.html  --exit-code 0   docker.io/sdevsecops221/docker-vulnerable-dvwa:$CI_COMMIT_SHA
   
   artifacts:
     when: always
     paths:
-    - trivy-results.sarif
+    - trivy-results.html 
